@@ -52,8 +52,8 @@ class WelcomeScreen extends StatelessWidget {
                   'Descubre y guarda tus películas favoritas.',
                   style: TextStyle(
                     fontSize: 16,
-                    fontWeight: FontWeight.bold, // Negrita
-                    color: Colors.white, // Texto blanco
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
                   ),
                   textAlign: TextAlign.center,
                 ),

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 
 class LoginScreen extends StatelessWidget {
+  TextEditingController emailController = TextEditingController();
+  TextEditingController passwordController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -9,12 +12,12 @@ class LoginScreen extends StatelessWidget {
         title: Text(
           'Iniciar Sesión',
           style: TextStyle(
-            color: Colors.white, 
-            fontWeight: FontWeight.bold, 
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
           ),
         ),
         backgroundColor: Colors.black,
-        iconTheme: IconThemeData(color: Colors.white), 
+        iconTheme: IconThemeData(color: Colors.white),
       ),
       body: Center(
         child: Padding(
@@ -47,10 +50,11 @@ class LoginScreen extends StatelessWidget {
 
   Widget _emailInput() {
     return TextField(
+      controller: emailController,
       style: TextStyle(color: Colors.black),
       decoration: InputDecoration(
         filled: true,
-        fillColor: Colors.white, // Fondo blanco
+        fillColor: Colors.white,
         labelText: 'Correo electrónico',
         labelStyle: TextStyle(color: Colors.black),
         border: OutlineInputBorder(),
@@ -66,6 +70,7 @@ class LoginScreen extends StatelessWidget {
 
   Widget _passwordInput() {
     return TextField(
+      controller: passwordController,
       obscureText: true,
       style: TextStyle(color: Colors.black),
       decoration: InputDecoration(
