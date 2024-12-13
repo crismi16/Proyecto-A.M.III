@@ -1,7 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 
 class RegisterScreen extends StatelessWidget {
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController lastNameController = TextEditingController();
+  final TextEditingController idController = TextEditingController();
+  final TextEditingController usernameController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  final TextEditingController confirmPasswordController = TextEditingController();
+  final TextEditingController addressController = TextEditingController();
+  final TextEditingController phoneController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -17,7 +28,6 @@ class RegisterScreen extends StatelessWidget {
         backgroundColor: Colors.black,
         iconTheme: IconThemeData(color: Colors.white),
       ),
-
       body: Center(
         child: SingleChildScrollView(
           child: Padding(
@@ -64,45 +74,45 @@ class RegisterScreen extends StatelessWidget {
   }
 
   Widget _nameInput() {
-    return _buildInputField(label: 'Nombre');
+    return _buildInputField(controller: nameController, label: 'Nombre');
   }
 
   Widget _lastNameInput() {
-    return _buildInputField(label: 'Apellido');
+    return _buildInputField(controller: lastNameController, label: 'Apellido');
   }
 
   Widget _idInput() {
-    return _buildInputField(label: 'Cédula', keyboardType: TextInputType.number);
+    return _buildInputField(controller: idController, label: 'Cédula', keyboardType: TextInputType.number);
   }
 
   Widget _usernameInput() {
-    return _buildInputField(label: 'Nombre de usuario');
+    return _buildInputField(controller: usernameController, label: 'Nombre de usuario');
   }
 
   Widget _emailInput() {
-    return _buildInputField(label: 'Correo electrónico', keyboardType: TextInputType.emailAddress);
+    return _buildInputField(controller: emailController, label: 'Correo electrónico', keyboardType: TextInputType.emailAddress);
   }
 
   Widget _passwordInput() {
-    return _buildInputField(label: 'Contraseña', obscureText: true);
+    return _buildInputField(controller: passwordController, label: 'Contraseña', obscureText: true);
   }
 
   Widget _confirmPasswordInput() {
-    return _buildInputField(label: 'Confirmar contraseña', obscureText: true);
+    return _buildInputField(controller: confirmPasswordController, label: 'Confirmar contraseña', obscureText: true);
   }
 
   Widget _addressInput() {
-    return _buildInputField(label: 'Dirección');
+    return _buildInputField(controller: addressController, label: 'Dirección');
   }
 
   Widget _phoneInput() {
-    return _buildInputField(label: 'Teléfono', keyboardType: TextInputType.phone);
+    return _buildInputField(controller: phoneController, label: 'Teléfono', keyboardType: TextInputType.phone);
   }
 
   Widget _registerButton(BuildContext context) {
     return ElevatedButton(
-      onPressed: () {
-        // Acción de registro
+      onPressed: () async {
+        await _registerUser(context);
       },
       style: ElevatedButton.styleFrom(
         backgroundColor: Color(0xFF27C4D9), // Fondo del botón
@@ -123,11 +133,13 @@ class RegisterScreen extends StatelessWidget {
   }
 
   Widget _buildInputField({
+    required TextEditingController controller,
     required String label,
     TextInputType keyboardType = TextInputType.text,
     bool obscureText = false,
   }) {
     return TextField(
+      controller: controller,
       obscureText: obscureText,
       keyboardType: keyboardType,
       style: TextStyle(color: Colors.black),
@@ -145,5 +157,34 @@ class RegisterScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _registerUser(BuildContext context) async {
+    try {
+      final credential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: emailController.text,
+        password: passwordController.text,
+      );
+
+      // Guardar datos en Realtime Database
+      DatabaseReference ref = FirebaseDatabase.instance.ref("usuarios/${credential.user?.uid}");
+      await ref.set({
+        "nombre": nameController.text,
+        "apellido": lastNameController.text,
+        "cedula": idController.text,
+        "nombre_usuario": usernameController.text,
+        "correo": emailController.text,
+        "direccion": addressController.text,
+        "telefono": phoneController.text,
+      });
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'weak-password') {
+        print('La contraseña proporcionada es demasiado débil.');
+      } else if (e.code == 'email-already-in-use') {
+        print('Ya existe una cuenta con ese correo.');
+      }
+    } catch (e) {
+      print(e);
+    }
   }
 }
