@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_proyecto/screens/peliculas_screen.dart';
 
 class LoginScreen extends StatelessWidget {
-  TextEditingController emailController = TextEditingController();
-  TextEditingController passwordController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -91,8 +93,8 @@ class LoginScreen extends StatelessWidget {
 
   Widget _loginButton(BuildContext context) {
     return ElevatedButton(
-      onPressed: () {
-        // Acción de inicio de sesión
+      onPressed: () async {
+        await _loginWithEmailAndPassword(context);
       },
       style: ElevatedButton.styleFrom(
         backgroundColor: Color(0xFF27C4D9),
@@ -110,5 +112,27 @@ class LoginScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _loginWithEmailAndPassword(BuildContext context) async {
+    try {
+      final credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: emailController.text,
+        password: passwordController.text,
+      );
+      // Navega a la pantalla de películas
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => PeliculasScreen()),
+      );
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'user-not-found') {
+        print('No user found for that email.');
+      } else if (e.code == 'wrong-password') {
+        print('Wrong password provided for that user.');
+      }
+    } catch (e) {
+      print(e);
+    }
   }
 }
