@@ -1,38 +1,33 @@
 import 'package:flutter/material.dart';
-import 'package:video_player/video_player.dart';
+import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
-class MovieDetailsPage extends StatefulWidget {
-  final String videoUrl;
-  final String title;
-  final String description;
+class DetallePeliculaScreen extends StatefulWidget {
+  final String imageUrl;
 
-  const MovieDetailsPage({
-    Key? key,
-    required this.videoUrl,
-    required this.title,
-    required this.description,
-  }) : super(key: key);
+  DetallePeliculaScreen({required this.imageUrl});
 
   @override
-  _MovieDetailsPageState createState() => _MovieDetailsPageState();
+  _DetallePeliculaScreenState createState() => _DetallePeliculaScreenState();
 }
 
-class _MovieDetailsPageState extends State<MovieDetailsPage> {
-  late VideoPlayerController _controller;
+class _DetallePeliculaScreenState extends State<DetallePeliculaScreen> {
+  late YoutubePlayerController _youtubeController;
 
   @override
   void initState() {
     super.initState();
-    _controller = VideoPlayerController.network(widget.videoUrl)
-      ..initialize().then((_) {
-        setState(() {}); // Para actualizar el estado después de la inicialización
-        _controller.play(); // Reproduce automáticamente
-      });
+    _youtubeController = YoutubePlayerController(
+      initialVideoId: YoutubePlayer.convertUrlToId('https://www.youtube.com/watch?v=UPgUIORqja4')!,
+      flags: YoutubePlayerFlags(
+        autoPlay: false,
+        mute: false,
+      ),
+    );
   }
 
   @override
   void dispose() {
-    _controller.dispose(); // Liberar recursos
+    _youtubeController.dispose();
     super.dispose();
   }
 
@@ -40,32 +35,91 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title),
+        title: Text('Detalle de la Película'),
       ),
       body: SingleChildScrollView(
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            if (_controller.value.isInitialized)
-              AspectRatio(
-                aspectRatio: _controller.value.aspectRatio,
-                child: VideoPlayer(_controller),
-              )
-            else
-              const Center(child: CircularProgressIndicator()),
-            const SizedBox(height: 20),
+            YoutubePlayer(
+              controller: _youtubeController,
+              showVideoProgressIndicator: true,
+              progressIndicatorColor: Colors.amber,
+              progressColors: ProgressBarColors(
+                playedColor: Colors.amber,
+                handleColor: Colors.amberAccent,
+              ),
+              onReady: () {
+                _youtubeController.addListener(() {});
+              },
+            ),
+            SizedBox(height: 16),
             Padding(
               padding: const EdgeInsets.all(16.0),
-              child: Text(
-                widget.title,
-                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8.0),
+                    child: Image.network(
+                      widget.imageUrl,
+                      height: 150,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                  SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Título: Película Ejemplo',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        SizedBox(height: 8),
+                        Text(
+                          'Género: Ciencia Ficción',
+                          style: TextStyle(
+                            fontSize: 16,
+                          ),
+                        ),
+                        SizedBox(height: 8),
+                        Text(
+                          'Año: 2024',
+                          style: TextStyle(
+                            fontSize: 16,
+                          ),
+                        ),
+                        SizedBox(height: 8),
+                        Text(
+                          'Calificación: ★★★★☆',
+                          style: TextStyle(
+                            fontSize: 16,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
             Padding(
               padding: const EdgeInsets.all(16.0),
-              child: Text(
-                widget.description,
-                style: const TextStyle(fontSize: 16),
+              child: Card(
+                color: Color(0xFF1C2227),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Text(
+                    'Reseña: Esta es una reseña de ejemplo para la película. La trama es fascinante y los personajes están bien desarrollados. Es una experiencia cinematográfica que no te puedes perder.',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
               ),
             ),
           ],

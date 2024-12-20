@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'login_screen.dart'; // Asegúrate de importar la pantalla de Login
+import 'login_screen.dart';
 
 class RegisterScreen extends StatelessWidget {
   RegisterScreen({super.key});
@@ -140,16 +140,13 @@ class RegisterScreen extends StatelessWidget {
     }
 
     try {
-      // Crear usuario en Firebase Authentication
       UserCredential userCredential = await auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
 
-      // Obtener el UID del usuario creado
       String uid = userCredential.user!.uid;
 
-      // Guardar datos adicionales en Realtime Database
       DatabaseReference ref = database.ref("users/$uid");
       await ref.set({
         "nombre": nameController.text,
@@ -163,7 +160,6 @@ class RegisterScreen extends StatelessWidget {
 
       _showMessage(context, "Usuario registrado con éxito");
 
-      // Redirigir a la pantalla de inicio de sesión
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => LoginScreen()),

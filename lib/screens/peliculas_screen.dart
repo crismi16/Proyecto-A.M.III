@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter_proyecto/screens/detalle_pelicula_screen.dart';
 
 class PeliculasScreen extends StatelessWidget {
   PeliculasScreen({super.key});
@@ -53,7 +54,6 @@ class PeliculasScreen extends StatelessWidget {
     'https://m.media-amazon.com/images/S/pv-target-images/3cecd095b6275b1a300d0f274a83c861be09f00998b24a98c5afb4c15f403c19.jpg',
     'https://pics.filmaffinity.com/Hereditary-659865612-large.jpg',
   ];
-
   @override
   Widget build(BuildContext context) {
     final double screenWidth = MediaQuery.of(context).size.width;
@@ -89,36 +89,42 @@ class PeliculasScreen extends StatelessWidget {
                 'Películas Nuevas',
                 nuevasPeliculas,
                 screenWidth * 1.32,
+                context,
               ),
               SizedBox(height: 20),
               _buildCarouselSection(
                 'Recomendados',
                 recomendadas,
                 screenWidth * 0.5,
+                context,
               ),
               SizedBox(height: 20),
               _buildCarouselSection(
                 'Ciencia Ficción',
                 cienciaficcion,
                 screenWidth * 0.5,
+                context,
               ),
               SizedBox(height: 20),
               _buildCarouselSection(
                 'Acción',
                 accion,
                 screenWidth * 0.5,
+                context,
               ),
               SizedBox(height: 20),
               _buildCarouselSection(
                 'Comedia',
                 comedia,
                 screenWidth * 0.5,
+                context,
               ),
               SizedBox(height: 20),
               _buildCarouselSection(
                 'Terror',
                 terror,
                 screenWidth * 0.5,
+                context,
               ),
             ],
           ),
@@ -127,7 +133,7 @@ class PeliculasScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildCarouselSection(String title, List<String> images, double height) {
+  Widget _buildCarouselSection(String title, List<String> images, double height, BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -146,7 +152,7 @@ class PeliculasScreen extends StatelessWidget {
             scrollDirection: Axis.horizontal,
             itemCount: images.length,
             itemBuilder: (context, index) {
-              return _buildCarouselItem(images[index], height);
+              return _buildCarouselItem(images[index], height, context);
             },
           ),
         ),
@@ -154,27 +160,37 @@ class PeliculasScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildCarouselItem(String imageUrl, double height) {
-    return Padding(
-      padding: const EdgeInsets.only(right: 10.0),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(10),
-        child: Image.network(
-          imageUrl,
-          height: height,
-          fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) {
-            return Container(
-              height: height,
-              width: height * 0.7,
-              color: Colors.grey,
-              child: Icon(
-                Icons.error,
-                color: Colors.red,
-                size: 40,
-              ),
-            );
-          },
+  Widget _buildCarouselItem(String imageUrl, double height, BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => DetallePeliculaScreen(imageUrl: imageUrl),
+          ),
+        );
+      },
+      child: Padding(
+        padding: const EdgeInsets.only(right: 10.0),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(10),
+          child: Image.network(
+            imageUrl,
+            height: height,
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) {
+              return Container(
+                height: height,
+                width: height * 0.7,
+                color: Colors.grey,
+                child: Icon(
+                  Icons.error,
+                  color: Colors.red,
+                  size: 40,
+                ),
+              );
+            },
+          ),
         ),
       ),
     );
