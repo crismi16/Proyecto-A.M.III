@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'login_screen.dart'; // Asegúrate de importar la pantalla de Login
 
 class RegisterScreen extends StatelessWidget {
+  RegisterScreen({super.key});
+
   final TextEditingController nameController = TextEditingController();
   final TextEditingController lastNameController = TextEditingController();
   final TextEditingController idController = TextEditingController();
@@ -21,8 +24,8 @@ class RegisterScreen extends StatelessWidget {
         title: Text(
           'Registro',
           style: TextStyle(
-            color: Colors.white, 
-            fontWeight: FontWeight.bold, 
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
           ),
         ),
         backgroundColor: Colors.black,
@@ -73,41 +76,15 @@ class RegisterScreen extends StatelessWidget {
     );
   }
 
-  Widget _nameInput() {
-    return _buildInputField(controller: nameController, label: 'Nombre');
-  }
-
-  Widget _lastNameInput() {
-    return _buildInputField(controller: lastNameController, label: 'Apellido');
-  }
-
-  Widget _idInput() {
-    return _buildInputField(controller: idController, label: 'Cédula', keyboardType: TextInputType.number);
-  }
-
-  Widget _usernameInput() {
-    return _buildInputField(controller: usernameController, label: 'Nombre de usuario');
-  }
-
-  Widget _emailInput() {
-    return _buildInputField(controller: emailController, label: 'Correo electrónico', keyboardType: TextInputType.emailAddress);
-  }
-
-  Widget _passwordInput() {
-    return _buildInputField(controller: passwordController, label: 'Contraseña', obscureText: true);
-  }
-
-  Widget _confirmPasswordInput() {
-    return _buildInputField(controller: confirmPasswordController, label: 'Confirmar contraseña', obscureText: true);
-  }
-
-  Widget _addressInput() {
-    return _buildInputField(controller: addressController, label: 'Dirección');
-  }
-
-  Widget _phoneInput() {
-    return _buildInputField(controller: phoneController, label: 'Teléfono', keyboardType: TextInputType.phone);
-  }
+  Widget _nameInput() => _buildInputField(controller: nameController, label: 'Nombre');
+  Widget _lastNameInput() => _buildInputField(controller: lastNameController, label: 'Apellido');
+  Widget _idInput() => _buildInputField(controller: idController, label: 'Cédula', keyboardType: TextInputType.number);
+  Widget _usernameInput() => _buildInputField(controller: usernameController, label: 'Nombre de usuario');
+  Widget _emailInput() => _buildInputField(controller: emailController, label: 'Correo electrónico', keyboardType: TextInputType.emailAddress);
+  Widget _passwordInput() => _buildInputField(controller: passwordController, label: 'Contraseña', obscureText: true);
+  Widget _confirmPasswordInput() => _buildInputField(controller: confirmPasswordController, label: 'Confirmar contraseña', obscureText: true);
+  Widget _addressInput() => _buildInputField(controller: addressController, label: 'Dirección');
+  Widget _phoneInput() => _buildInputField(controller: phoneController, label: 'Teléfono', keyboardType: TextInputType.phone);
 
   Widget _registerButton(BuildContext context) {
     return ElevatedButton(
@@ -117,17 +94,11 @@ class RegisterScreen extends StatelessWidget {
       style: ElevatedButton.styleFrom(
         backgroundColor: Color(0xFF27C4D9), // Fondo del botón
         padding: EdgeInsets.symmetric(vertical: 15, horizontal: 30),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
       child: Text(
         'Registrarse',
-        style: TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
-          color: Colors.white,
-        ),
+        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
       ),
     );
   }
@@ -149,42 +120,66 @@ class RegisterScreen extends StatelessWidget {
         labelText: label,
         labelStyle: TextStyle(color: Colors.black),
         border: OutlineInputBorder(),
-        enabledBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: Colors.white),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: Color(0xFF27C4D9)),
-        ),
+        enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white)),
+        focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Color(0xFF27C4D9))),
       ),
     );
   }
 
   Future<void> _registerUser(BuildContext context) async {
+    final auth = FirebaseAuth.instance;
+    final database = FirebaseDatabase.instance;
+
+    final String email = emailController.text.trim();
+    final String password = passwordController.text.trim();
+    final String confirmPassword = confirmPasswordController.text.trim();
+
+    if (password != confirmPassword) {
+      _showMessage(context, "Las contraseñas no coinciden");
+      return;
+    }
+
     try {
-      final credential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: emailController.text,
-        password: passwordController.text,
+      // Crear usuario en Firebase Authentication
+      UserCredential userCredential = await auth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
       );
 
-      // Guardar datos en Realtime Database
-      DatabaseReference ref = FirebaseDatabase.instance.ref("usuarios/${credential.user?.uid}");
+      // Obtener el UID del usuario creado
+      String uid = userCredential.user!.uid;
+
+      // Guardar datos adicionales en Realtime Database
+      DatabaseReference ref = database.ref("users/$uid");
       await ref.set({
         "nombre": nameController.text,
         "apellido": lastNameController.text,
         "cedula": idController.text,
         "nombre_usuario": usernameController.text,
-        "correo": emailController.text,
+        "correo": email,
         "direccion": addressController.text,
         "telefono": phoneController.text,
       });
-    } on FirebaseAuthException catch (e) {
-      if (e.code == 'weak-password') {
-        print('La contraseña proporcionada es demasiado débil.');
-      } else if (e.code == 'email-already-in-use') {
-        print('Ya existe una cuenta con ese correo.');
-      }
+
+      _showMessage(context, "Usuario registrado con éxito");
+
+      // Redirigir a la pantalla de inicio de sesión
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => LoginScreen()),
+      );
     } catch (e) {
       print(e);
+      _showMessage(context, "Error: ${e.toString()}");
     }
+  }
+
+  void _showMessage(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.redAccent,
+      ),
+    );
   }
 }

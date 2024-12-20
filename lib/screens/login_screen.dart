@@ -97,13 +97,13 @@ class LoginScreen extends StatelessWidget {
         await _loginWithEmailAndPassword(context);
       },
       style: ElevatedButton.styleFrom(
-        backgroundColor: Color(0xFF27C4D9),
-        padding: EdgeInsets.symmetric(vertical: 15, horizontal: 30),
+        backgroundColor: const Color(0xFF27C4D9),
+        padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 30),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
         ),
       ),
-      child: Text(
+      child: const Text(
         'Iniciar Sesión',
         style: TextStyle(
           fontSize: 18,
